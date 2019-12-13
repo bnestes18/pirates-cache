@@ -3,10 +3,26 @@
     "use strict";
 
     // VARIABLES
-    let url = 'https://vanillajsacademy.com/api/pirates.json';
     let app = document.querySelector('#app');
 
     // FUNCTIONS
+
+    let renderFallbackData = function () {
+        // Get the data from localStorage
+        let expiredData = localStorage.getItem('cachedPirates');
+                // If localStorage data does not exist, render an error
+                // message and jump out of the function.
+                if (!expiredData) {
+                    renderNoArticles();
+                    return;
+                }
+                // Otherwise, convert the JSON into an object
+                expiredData = JSON.parse(expiredData);
+                // Render the articles with the expired data
+                renderArticles(expiredData.data);
+                console.log('Using expired data...');
+                
+    }
 
     /*
     * Dynamically vary the API endpoint
@@ -44,7 +60,7 @@
         // If there are no articles to render, render a message to the UI and
         // break out of the renderArticles() function
         if (articles.length < 1) {
-            app.innerHTML += 'Sorry, there are no articles to display at this time.';
+            renderNoArticles();
             return;
         }
 
@@ -61,6 +77,12 @@
             }).join('') +
             '</div>'
 
+    }
+    /* This function will insert an error message into the dom if
+       no articles can be rendered.
+    */
+    let renderNoArticles = function () {
+        app.innerHTML = '<p>Sorry, cannot load the articles at this time.</p>'
     }
     /*
     This function sets up the object that will hold the pirates data 
@@ -115,15 +137,8 @@
                 renderArticles(piratesData);
                 saveData(piratesData);
                 console.log('Using fetched data...');
-            }).catch(function (err) {
-                let expiredData = localStorage.getItem('cachedPirates');
-                if (!expiredData) {
-                    app.innerHTML = 'Cannot load the articles at this time.'
-                    console.log(err);
-                }
-                expiredData = JSON.parse(expiredData);
-                console.log('Using expired data...')
-                renderArticles(expiredData.data);
+            }).catch(function () {
+                renderFallbackData();
                 
             })
     }
@@ -134,7 +149,7 @@
         if (!cachedData) return;
         cachedData = JSON.parse(cachedData);
         // Check if localStorage data (cached data) is still valid after 5 seconds
-        // If so, used it.
+        // If so, use it.
         if (isDataValid(cachedData, 1000 * 5)) {
             return cachedData.data;
         }

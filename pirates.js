@@ -8,6 +8,17 @@
 
     // FUNCTIONS
 
+    /*
+    * Dynamically vary the API endpoint
+    * @return {String} The API endpoint
+    */
+    let getEndpoint = function () {
+        let endpoint = 'https://vanillajsacademy.com/api/';     
+        let random = Math.random();
+        if (random < 0.5) return endpoint + 'pirates.json';
+        return endpoint + 'fail.json'
+
+    }
     /*!
      * Sanitize and encode all HTML in a user-submitted string
      * (c) 2018 Chris Ferdinandi, MIT License, https://gomakethings.com
@@ -91,8 +102,8 @@
             console.log('Using cached data...');
             return;
         }
-        // Fetch articles from API
-        fetch(url)
+        // Otherwise, fetch articles from API
+        fetch(getEndpoint())
             .then(function (response) {
                 if (response.ok) {
                     return response.json();
@@ -105,25 +116,32 @@
                 saveData(piratesData);
                 console.log('Using fetched data...');
             }).catch(function (err) {
-                app.innerHTML = 'Cannot load the articles at this time.'
-                console.log(err);
+                let expiredData = localStorage.getItem('cachedPirates');
+                if (!expiredData) {
+                    app.innerHTML = 'Cannot load the articles at this time.'
+                    console.log(err);
+                }
+                expiredData = JSON.parse(expiredData);
+                console.log('Using expired data...')
+                renderArticles(expiredData.data);
+                
             })
     }
 
-    /* This function grabs either the saved data from localStorage or new data from fetch call*/
+    /* This function returns the saved data from localStorage if the data is still valid*/
     let getData = function () {
         let cachedData = localStorage.getItem('cachedPirates');
         if (!cachedData) return;
         cachedData = JSON.parse(cachedData);
         // Check if localStorage data (cached data) is still valid after 5 seconds
-        // If so, used it.  If not, make another fetch call.
-        if (isDataValid(cachedData, 1000 * 10)) {
+        // If so, used it.
+        if (isDataValid(cachedData, 1000 * 5)) {
             return cachedData.data;
         }
     }
 
 
-    // 
+    // Get the articles on initial load
     getArticles();
 
 

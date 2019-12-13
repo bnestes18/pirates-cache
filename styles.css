@@ -1,0 +1,12 @@
+body {
+    max-width: 70%;
+    margin: auto;
+}
+h1 {
+    margin-top: 4rem;
+}
+
+h2 {
+    margin-bottom: 3rem;
+    font-style: italic;
+}
